@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Просмотр</title>
+	</head>
+	<body>
+		<p>Просмотр конфига:</p>
+		
+		
+		<table border="1" cellpadding="7" cellspacing="0">
+		<tr>
+			<td>номер телефона</td>
+			<td>ФИО РГ</td>
+			<td>ФИО МПП</td>
+			<td>План результат. звонков</td>
+			<td>План встреч</td>			
+		</tr>
+			
+		{{range $key,$value:=.}}			
+		
+		<tr>
+			<td>{{$value.Numtel}}</td>
+			<td>{{$value.Fio_rg}}</td>
+			<td>{{$value.Fio_man}}</td>			
+			<td align="center"><input type="text" size="5" value={{$value.Planresultkolzv}}></td>
+			<td align="center"><input type="text" size="5" value={{$value.Plankolvstrech}}></td>
+			<td> <a href="edit/{{$key}}">изменить</a></td>
+			<td> <a href="del/{{$key}}">удалить</a></td>	
+		</tr>
+		{{end}}
+		
+		<table>
+
+		
+		
+			
+	</body>
+</html>
