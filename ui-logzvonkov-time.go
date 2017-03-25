@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	//	"html/template"
 	"net/http"
 	"os"
 	"strconv"
@@ -51,7 +50,7 @@ type DataConfigFile struct {
 }
 
 var (
-	dataConfigFile []DataConfigFile
+	dataConfigFile []DataConfigFile // структура данных конфиг файла
 )
 
 //------------ END Объявление типов и глобальных переменных
@@ -82,7 +81,7 @@ func Savestrtofile(namef string, str string) int {
 	return 0
 }
 
-// сохранение данных из dataConfigFile товара в файл с именем namef
+// сохранение данных из dataConfigFile в файл с именем namef
 func saveToFileCfg(namef string, tt []DataConfigFile) {
 	str := ""
 	for _, t := range tt {
@@ -129,8 +128,9 @@ func readConfigFile(nameFile string) []DataConfigFile {
 	return dataConfigFile
 }
 
+// обработчик начальной страницы
 func indexHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request) {
-	rr.HTML(200, "index", &page{Title: "Йоу Начало", Msg: "Начальная страница", TekUsr: "Текущий пользователь: " + string(user)})
+	rr.HTML(200, "index", &page{Title: "Работа с конфиг файлом лога звонков", Msg: "Начальная страница", TekUsr: "Текущий пользователь: " + string(user)})
 }
 
 // обработка редактирования строки конфига
@@ -155,9 +155,6 @@ func SaveConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWrit
 	plankolvstrech := r.FormValue("plankolvstrech")
 	dataConfigFile[nstr].Plankolvstrech = plankolvstrech
 	dataConfigFile[nstr].Planresultkolzv = planresultkolzv
-
-	//	fmt.Println(plankolvstrech)
-	//	fmt.Println(planresultkolzv)
 
 	saveToFileCfg(nameConfigFile, dataConfigFile)
 
