@@ -7,12 +7,31 @@
 	</head>
 	<body>
 				
-	<form target="_self" action="/exec/" enctype="multipart/form-data" method="post">
+	<form target="_self" action="/save/{{.Nstr}}" enctype="multipart/form-data" method="post">
 	<table border="1">	
 		<tr>
-    		
-			
+			{{.Nstr}}
+
+        <td>{{.Numtel}}</td>
+			<td>
+				{{.Fio_rg}}
+			</td>
+			<td>
+				{{.Fio_man}}
+			</td>			
+			<td align="center">
+				<input type="text" name="planresultkolzv" size="5" value={{.Planresultkolzv}}>
+			</td>
+			<td align="center">
+				<input type="text" name="plankolvstrech" size="5" value={{.Plankolvstrech}}>
+			</td>   
 		</tr>		
+		<tr>
+			<td colspan=4 align=center>
+				<b><input type="submit" name="button" value="Сохранить" />  <br>   			
+  			</td>
+		</tr>	
+		
 	</table>
 		
 		<br>

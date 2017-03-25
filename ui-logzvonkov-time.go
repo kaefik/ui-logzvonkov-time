@@ -47,7 +47,7 @@ type DataConfigFile struct {
 	Fio_rg          string // ФИО РГ
 	Planresultkolzv string // плановое кол-во результативных звоноков
 	Plankolvstrech  string // плановое количество встреч
-	Nstr            string // номер строки который редактируется или удаляется, если -1 то новое условие
+	Nstr            int    // номер строки который редактируется или удаляется, если -1 то новое условие
 }
 
 var (
@@ -69,9 +69,9 @@ func SaveNewstrtofile(namef string, str string) int {
 	return 0
 }
 
-// сохранить файл
+// сохранить файл перезаписью
 func Savestrtofile(namef string, str string) int {
-	file, err := os.OpenFile(namef, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0776)
+	file, err := os.OpenFile(namef, os.O_CREATE|os.O_WRONLY, 0776)
 	if err != nil {
 		// handle the error here
 		return -1
@@ -82,11 +82,16 @@ func Savestrtofile(namef string, str string) int {
 	return 0
 }
 
-//сохранение данных из TTasker товара в файл с именем namef
-//func savetofilecfg(namef string, t TTasker) {
-//	str := t.Url + ";" + t.Uslovie + ";" + t.Price + ";" + "\n"
-//	Savestrtofile(namef, str)
-//}
+// сохранение данных из dataConfigFile товара в файл с именем namef
+func saveToFileCfg(namef string, tt []DataConfigFile) {
+	str := ""
+	for _, t := range tt {
+		str += t.Numtel + ";" + t.Fio_man + ";" + t.Fio_rg + ";" + t.Planresultkolzv + ";" + t.Plankolvstrech + "\n"
+	}
+
+	fmt.Println(tt)
+	Savestrtofile(namef, str)
+}
 
 // чтение файла с именем namef и возвращение содержимое файла, иначе текст ошибки
 func readfiletxt(namef string) string {
@@ -109,69 +114,54 @@ func readfiletxt(namef string) string {
 	return string(bs)
 }
 
+// чтение файла конфига логов звонков
+func readConfigFile(nameFile string) []DataConfigFile {
+	dataConfigFile := make([]DataConfigFile, 0)
+	s := readfiletxt(nameFile)
+	ss := strings.Split(s, "\n")
+	for k, v := range ss {
+		ts := strings.Split(v, ";")
+
+		if len(ts) >= 5 {
+			dataConfigFile = append(dataConfigFile, DataConfigFile{Numtel: ts[0], Fio_man: ts[1], Fio_rg: ts[2], Planresultkolzv: ts[3], Plankolvstrech: ts[4], Nstr: k})
+		}
+	}
+	return dataConfigFile
+}
+
 func indexHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request) {
 	rr.HTML(200, "index", &page{Title: "Йоу Начало", Msg: "Начальная страница", TekUsr: "Текущий пользователь: " + string(user)})
 }
 
-// обработка редактирования задания
+// обработка редактирования строки конфига
 func EditConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
 	nstr, _ := strconv.Atoi(params["nstr"])
-	fmt.Println("nstr = ", nstr)
-	fmt.Println(dataConfigFile)
-	//	tt := dataConfigFile[nstr]
-	//	rr.HTML(200, "edit", &tt)
+
+	tt := dataConfigFile[nstr]
+	//	fmt.Println(tt)
+	rr.HTML(200, "edit", &tt)
 }
 
-// просмотр заданий выбранного магазина
+// просмотр конфига
 func ViewConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request) {
-	s := readfiletxt(nameConfigFile)
-	ss := strings.Split(s, "\n")
-	for _, v := range ss {
-		ts := strings.Split(v, ";")
 
-		if len(ts) >= 5 {
-			dataConfigFile = append(dataConfigFile, DataConfigFile{Numtel: ts[0], Fio_man: ts[1], Fio_rg: ts[2], Planresultkolzv: ts[3], Plankolvstrech: ts[4]})
-		}
-	}
 	rr.HTML(200, "view", &dataConfigFile)
 }
 
-func ExecHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
-	//	var tt TTasker
-	//	nstr, _ := strconv.Atoi(params["nstr"])
-	//	//	shop := params["shop"]
-	//	shop := r.FormValue("shop")
+// сохранение измененных данных перезаписью файла
+func SaveConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
+	nstr, _ := strconv.Atoi(params["nstr"])
+	planresultkolzv := r.FormValue("planresultkolzv")
+	plankolvstrech := r.FormValue("plankolvstrech")
+	dataConfigFile[nstr].Plankolvstrech = plankolvstrech
+	dataConfigFile[nstr].Planresultkolzv = planresultkolzv
 
-	//	tt.Shop = r.FormValue("shop")
-	//	tt.Url = r.FormValue("surl")
-	//	tt.Uslovie = r.FormValue("uslovie")
-	//	tt.Price = r.FormValue("schislo")
+	//	fmt.Println(plankolvstrech)
+	//	fmt.Println(planresultkolzv)
 
-	//	if _, err := os.Stat(pathcfguser + string(user)); os.IsNotExist(err) {
-	//		os.Mkdir(pathcfguser+string(user), 0776)
-	//	}
-	//	namef := pathcfguser + string(user) + string(os.PathSeparator) + shop + "-url.cfg"
+	saveToFileCfg(nameConfigFile, dataConfigFile)
 
-	//	if nstr == -1 {
-	//		savetofilecfg(namef, tt)
-	//	} else {
-	//		s := readfiletxt(namef)
-	//		ss := strings.Split(s, "\n")
-	//		if nstr <= (len(ss) - 1) {
-	//			ss[nstr] = tt.Url + ";" + tt.Uslovie + ";" + tt.Price + ";"
-	//		}
-	//		str := ""
-	//		for _, v := range ss {
-	//			if v != "" {
-	//				str += v + "\n"
-	//			}
-	//		}
-	//		SaveNewstrtofile(namef, str)
-	//	}
-
-	//	ss1 := "Введенное условие для магазина " + shop
-	//	ss := tt.Url + "   " + tt.Uslovie + " " + tt.Price
-	//	rr.HTML(200, "exec", &page{Title: "Введенное условие для магазина " + shop, Msg: ss, Msg2: ss1})
+	rr.HTML(200, "save", "")
 }
 
 func authFunc(username, password string) bool {
@@ -195,8 +185,7 @@ func parse_args() bool {
 func main() {
 
 	nameConfigFile = "list-num-tel.cfg"
-
-	dataConfigFile = make([]DataConfigFile, 0)
+	dataConfigFile = readConfigFile(nameConfigFile)
 
 	fmt.Println(nameConfigFile)
 	m := martini.Classic()
@@ -218,13 +207,9 @@ func main() {
 
 	m.Use(auth.BasicFunc(authFunc))
 	m.Get("/edit/:nstr", EditConfigFileHandler)
-	m.Get("/", ViewConfigFileHandler)
+	m.Post("/save/:nstr", SaveConfigFileHandler)
+	m.Get("/view", ViewConfigFileHandler)
+	m.Get("/", indexHandler)
 	m.RunOnAddr(":9999")
 
 }
-
-//	m.Get("/addtask", AddTaskHandler)
-//	m.Get("/edit/:shop/:nstr", EditTaskHandler)
-//	m.Get("/del/:shop/:nstr", DelTaskHandler)
-//	m.Post("/exec/:shop/:nstr", ExecHandler)
-//	m.Get("/clickview", clickViewTaskHandler)
