@@ -12,14 +12,21 @@ func printDataConfigFile(d []DataConfigFile) {
 	}
 }
 
-//removeItemFromDataConfigFile(s []DataConfigFile, i int) []DataConfigFile
 func TestRemoveItemFromDataConfigFile(t *testing.T) {
-
 	nameConfigFile = "list-num-tel-test.cfg"
 	dataConfigFile := readConfigFile(nameConfigFile)
 	printDataConfigFile(dataConfigFile)
 
 	dataConfigFile = removeItemFromDataConfigFile(dataConfigFile, 0)
+	printDataConfigFile(dataConfigFile)
+}
+
+func TestSortFioRgDataConfigFile(t *testing.T) {
+	nameConfigFile = "list-num-tel-test.cfg"
+	dataConfigFile := readConfigFile(nameConfigFile)
+	printDataConfigFile(dataConfigFile)
+
+	dataConfigFile = sortFioRgDataConfigFile(dataConfigFile)
 	printDataConfigFile(dataConfigFile)
 
 }

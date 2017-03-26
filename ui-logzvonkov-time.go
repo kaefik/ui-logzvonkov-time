@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -53,7 +54,24 @@ var (
 	dataConfigFile []DataConfigFile // структура данных конфиг файла
 )
 
+type sortDataConfigFile []DataConfigFile
+
 //------------ END Объявление типов и глобальных переменных
+
+// ---- функции сортировки по полю ФИО РГ
+func (s sortDataConfigFile) Less(i, j int) bool {
+	return s[i].Fio_rg < s[j].Fio_rg
+}
+
+func (s sortDataConfigFile) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s sortDataConfigFile) Len() int {
+	return len(s)
+}
+
+// ---- END функции сортировки по полю ФИО РГ
 
 // удаляем в массиве позицию i
 func removeItemFromDataConfigFile(s []DataConfigFile, i int) []DataConfigFile {
@@ -66,6 +84,22 @@ func removeItemFromDataConfigFile(s []DataConfigFile, i int) []DataConfigFile {
 		}
 	}
 	return res
+}
+
+// сортировка по ФИО РГ
+func sortFioRgDataConfigFile(data []DataConfigFile) []DataConfigFile {
+	//	res := make([]DataConfigFile, 0)
+	sort.Sort(sortDataConfigFile(data))
+	data = refreshIndexInNstr(data)
+	return data
+}
+
+// обновление индекса по полю строки Nstr
+func refreshIndexInNstr(data []DataConfigFile) []DataConfigFile {
+	for k, _ := range data {
+		data[k].Nstr = k
+	}
+	return data
 }
 
 // сохранить в новый файл
@@ -149,22 +183,18 @@ func indexHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *ht
 // обработка редактирования строки конфига
 func EditConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
 	nstr, _ := strconv.Atoi(params["nstr"])
-
 	tt := dataConfigFile[nstr]
-	//	fmt.Println(tt)
 	rr.HTML(200, "edit", &tt)
 }
 
 // просмотр конфига
 func ViewConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request) {
-
 	rr.HTML(200, "view", &dataConfigFile)
 }
 
 // сохранение измененных данных перезаписью файла
 func SaveConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
 	nstr, _ := strconv.Atoi(params["nstr"])
-
 	numtel := r.FormValue("numtel")
 	fioman := r.FormValue("fioman")
 	fiorg := r.FormValue("fiorg")
@@ -181,21 +211,17 @@ func SaveConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWrit
 
 		dataConfigFile = append(dataConfigFile, DataConfigFile{Numtel: numtel, Fio_man: fioman, Fio_rg: fiorg, Plankolvstrech: plankolvstrech, Planresultkolzv: planresultkolzv})
 	}
-
+	dataConfigFile = sortFioRgDataConfigFile(dataConfigFile)
 	saveToFileCfg(nameConfigFile, dataConfigFile)
-
 	rr.HTML(200, "save", "")
 }
 
 // удаление выбранногоэлемента
 func DelConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
 	nstr, _ := strconv.Atoi(params["nstr"])
-
 	dataConfigFile = removeItemFromDataConfigFile(dataConfigFile, nstr)
-
 	fmt.Println("измененные:  ", dataConfigFile)
 	saveToFileCfg(nameConfigFile, dataConfigFile)
-
 	rr.HTML(200, "save", "")
 }
 
