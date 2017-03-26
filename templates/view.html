@@ -8,21 +8,25 @@
 	<body>
 		<p>Просмотр конфига:</p>
 		
+	<p>
+		
+	</p>
 		
 		<table border="1" cellpadding="7" cellspacing="0">
-		<tr>
-			<td>номер телефона</td>
-			<td>ФИО РГ</td>
-			<td>ФИО МПП</td>
-			<td>План результат. звонков</td>
-			<td>План встреч</td>			
+		<tr>			
+			<td align="center">ФИО РГ</td>
+			<td align="center">номер <br> телефона</td>
+			<td align="center">ФИО МПП</td>			
+			<td align="center">План <br> результат. <br> звонков</td>
+			<td align="center">План <br> встреч</td>	
+			<td colspan=2 align="center"><a href="add">Добавить<br> нового МПП</a>	</td>
 		</tr>
 			
 		{{range $key,$value:=.}}			
 		
-		<tr>
-			<td>{{$value.Numtel}}</td>
+		<tr>			
 			<td>{{$value.Fio_rg}}</td>
+			<td>{{$value.Numtel}}</td>
 			<td>{{$value.Fio_man}}</td>			
 			<td align="center"><input type="text" size="5" value={{$value.Planresultkolzv}}></td>
 			<td align="center"><input type="text" size="5" value={{$value.Plankolvstrech}}></td>

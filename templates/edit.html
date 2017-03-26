@@ -10,28 +10,40 @@
 	<form target="_self" action="/save/{{.Nstr}}" enctype="multipart/form-data" method="post">
 	<table border="1">	
 		<tr>
-			{{.Nstr}}
-
-        <td>{{.Numtel}}</td>
+			<br><br><br>
+		</tr>
+        <tr>
 			<td>
-				{{.Fio_rg}}
+				<input type="text" name="numtel" size="50" placeholder="Введите номер телефона" value={{.Numtel}}>
 			</td>
-			<td>
-				{{.Fio_man}}
-			</td>			
-			<td align="center">
-				<input type="text" name="planresultkolzv" size="5" value={{.Planresultkolzv}}>
-			</td>
-			<td align="center">
-				<input type="text" name="plankolvstrech" size="5" value={{.Plankolvstrech}}>
-			</td>   
+		</tr>
+				
+			<tr>
+				<td>
+					<input type="text" name="fiorg" size="50" placeholder="Введите ФИО РГ" value={{.Fio_rg}}>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<input type="text" name="fioman" size="50" placeholder="Введите МПП" value={{.Fio_man}}>
+				</td>
+			</tr>			
+			<tr align="center">
+				<td>
+					<input type="text" name="planresultkolzv" size="50" placeholder="План результативных звонков" value={{.Planresultkolzv}}>
+				</td>
+			</tr>
+			<tr align="center">
+				<td>
+					<input type="text" name="plankolvstrech" size="50" placeholder="План количества встреч" value={{.Plankolvstrech}}>
+				</td>
+			</tr>   
 		</tr>		
 		<tr>
 			<td colspan=4 align=center>
 				<b><input type="submit" name="button" value="Сохранить" />  <br>   			
   			</td>
-		</tr>	
-		
+		</tr>		
 	</table>
 		
 		<br>

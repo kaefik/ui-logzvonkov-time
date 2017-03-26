@@ -55,6 +55,19 @@ var (
 
 //------------ END Объявление типов и глобальных переменных
 
+// удаляем в массиве позицию i
+func removeItemFromDataConfigFile(s []DataConfigFile, i int) []DataConfigFile {
+	//	s[len(s)-1], s[i] = s[i], s[len(s)-1]
+	//	return s[:len(s)-1]
+	res := make([]DataConfigFile, 0)
+	for k, v := range s {
+		if k != i {
+			res = append(res, v)
+		}
+	}
+	return res
+}
+
 // сохранить в новый файл
 func SaveNewstrtofile(namef string, str string) int {
 	file, err := os.Create(namef)
@@ -151,14 +164,44 @@ func ViewConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWrit
 // сохранение измененных данных перезаписью файла
 func SaveConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
 	nstr, _ := strconv.Atoi(params["nstr"])
+
+	numtel := r.FormValue("numtel")
+	fioman := r.FormValue("fioman")
+	fiorg := r.FormValue("fiorg")
 	planresultkolzv := r.FormValue("planresultkolzv")
 	plankolvstrech := r.FormValue("plankolvstrech")
-	dataConfigFile[nstr].Plankolvstrech = plankolvstrech
-	dataConfigFile[nstr].Planresultkolzv = planresultkolzv
+
+	if nstr != -1 {
+		dataConfigFile[nstr].Numtel = numtel
+		dataConfigFile[nstr].Fio_man = fioman
+		dataConfigFile[nstr].Fio_rg = fiorg
+		dataConfigFile[nstr].Plankolvstrech = plankolvstrech
+		dataConfigFile[nstr].Planresultkolzv = planresultkolzv
+	} else {
+
+		dataConfigFile = append(dataConfigFile, DataConfigFile{Numtel: numtel, Fio_man: fioman, Fio_rg: fiorg, Plankolvstrech: plankolvstrech, Planresultkolzv: planresultkolzv})
+	}
 
 	saveToFileCfg(nameConfigFile, dataConfigFile)
 
 	rr.HTML(200, "save", "")
+}
+
+// удаление выбранногоэлемента
+func DelConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
+	nstr, _ := strconv.Atoi(params["nstr"])
+
+	dataConfigFile = removeItemFromDataConfigFile(dataConfigFile, nstr)
+
+	fmt.Println("измененные:  ", dataConfigFile)
+	saveToFileCfg(nameConfigFile, dataConfigFile)
+
+	rr.HTML(200, "save", "")
+}
+
+// добавление нового элемента
+func AddConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
+	rr.HTML(200, "add", "")
 }
 
 func authFunc(username, password string) bool {
@@ -166,7 +209,7 @@ func authFunc(username, password string) bool {
 }
 
 // функция парсинга аргументов программы
-func parse_args() bool {
+func parseArgs() bool {
 	flag.StringVar(&hd, "hd", "", "Рабочая папка где нах-ся папки пользователей для сохранения ")
 	flag.StringVar(&user, "user", "", "Рабочая папка где нах-ся папки пользователей для сохранения ")
 	flag.Parse()
@@ -187,7 +230,7 @@ func main() {
 	fmt.Println(nameConfigFile)
 	m := martini.Classic()
 
-	if !parse_args() {
+	if !parseArgs() {
 		return
 	}
 
@@ -204,7 +247,9 @@ func main() {
 
 	m.Use(auth.BasicFunc(authFunc))
 	m.Get("/edit/:nstr", EditConfigFileHandler)
+	m.Get("/del/:nstr", DelConfigFileHandler)
 	m.Post("/save/:nstr", SaveConfigFileHandler)
+	m.Get("/add", AddConfigFileHandler)
 	m.Get("/view", ViewConfigFileHandler)
 	m.Get("/", indexHandler)
 	m.RunOnAddr(":9999")
