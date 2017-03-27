@@ -88,7 +88,6 @@ func removeItemFromDataConfigFile(s []DataConfigFile, i int) []DataConfigFile {
 
 // сортировка по ФИО РГ
 func sortFioRgDataConfigFile(data []DataConfigFile) []DataConfigFile {
-	//	res := make([]DataConfigFile, 0)
 	sort.Sort(sortDataConfigFile(data))
 	data = refreshIndexInNstr(data)
 	return data
@@ -102,22 +101,9 @@ func refreshIndexInNstr(data []DataConfigFile) []DataConfigFile {
 	return data
 }
 
-// сохранить в новый файл
-func SaveNewstrtofile(namef string, str string) int {
-	file, err := os.Create(namef)
-	if err != nil {
-		// handle the error here
-		return -1
-	}
-	defer file.Close()
-
-	file.WriteString(str)
-	return 0
-}
-
 // сохранить файл перезаписью
-func Savestrtofile(namef string, str string) int {
-	file, err := os.OpenFile(namef, os.O_CREATE|os.O_WRONLY, 0776)
+func SaveStrToFile(namef string, str string) int {
+	file, err := os.Create(namef)
 	if err != nil {
 		// handle the error here
 		return -1
@@ -134,9 +120,8 @@ func saveToFileCfg(namef string, tt []DataConfigFile) {
 	for _, t := range tt {
 		str += t.Numtel + ";" + t.Fio_man + ";" + t.Fio_rg + ";" + t.Planresultkolzv + ";" + t.Plankolvstrech + "\n"
 	}
-
-	fmt.Println(tt)
-	Savestrtofile(namef, str)
+	//	fmt.Println(tt)
+	SaveStrToFile(namef, str)
 }
 
 // чтение файла с именем namef и возвращение содержимое файла, иначе текст ошибки
@@ -192,6 +177,13 @@ func ViewConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWrit
 	rr.HTML(200, "view", &dataConfigFile)
 }
 
+func printDataConfigFile(d []DataConfigFile) {
+	fmt.Println("Длина массива: ", len(d))
+	for _, v := range d {
+		fmt.Println(v)
+	}
+}
+
 // сохранение измененных данных перезаписью файла
 func SaveConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
 	nstr, _ := strconv.Atoi(params["nstr"])
@@ -201,6 +193,9 @@ func SaveConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWrit
 	planresultkolzv := r.FormValue("planresultkolzv")
 	plankolvstrech := r.FormValue("plankolvstrech")
 
+	fmt.Println("Исходный масив")
+	printDataConfigFile(dataConfigFile)
+
 	if nstr != -1 {
 		dataConfigFile[nstr].Numtel = numtel
 		dataConfigFile[nstr].Fio_man = fioman
@@ -208,10 +203,17 @@ func SaveConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWrit
 		dataConfigFile[nstr].Plankolvstrech = plankolvstrech
 		dataConfigFile[nstr].Planresultkolzv = planresultkolzv
 	} else {
-
 		dataConfigFile = append(dataConfigFile, DataConfigFile{Numtel: numtel, Fio_man: fioman, Fio_rg: fiorg, Plankolvstrech: plankolvstrech, Planresultkolzv: planresultkolzv})
 	}
+
+	fmt.Println("Измененный масив")
+	printDataConfigFile(dataConfigFile)
+
 	dataConfigFile = sortFioRgDataConfigFile(dataConfigFile)
+
+	fmt.Println("Отсортированный масив")
+	printDataConfigFile(dataConfigFile)
+
 	saveToFileCfg(nameConfigFile, dataConfigFile)
 	rr.HTML(200, "save", "")
 }
@@ -220,7 +222,7 @@ func SaveConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWrit
 func DelConfigFileHandler(user auth.User, rr render.Render, w http.ResponseWriter, r *http.Request, params martini.Params) {
 	nstr, _ := strconv.Atoi(params["nstr"])
 	dataConfigFile = removeItemFromDataConfigFile(dataConfigFile, nstr)
-	fmt.Println("измененные:  ", dataConfigFile)
+	//	fmt.Println("измененные:  ", dataConfigFile)
 	saveToFileCfg(nameConfigFile, dataConfigFile)
 	rr.HTML(200, "save", "")
 }
